@@ -29,6 +29,7 @@ public class Offre {
         this.date_fin = date_fin;
     }
 
+
     public Offre(String nom, String description, String condition_utilisation, LocalDate date_debut, LocalDate date_fin, int type_id) {
         this.nom = nom;
         this.description = description;
@@ -58,6 +59,8 @@ public class Offre {
         this.date_debut = date_debut;
         this.date_fin = date_fin;
     }
+
+
 
 
 

@@ -1,18 +1,14 @@
 package esprit.controllers.Type;
 
+import esprit.controllers.Offre.UpdateOffreController;
 import esprit.entites.TypeOffre;
 import esprit.services.TypeService;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -23,49 +19,89 @@ public class IndexTypeController {
     private final TypeService typeService = new TypeService();
 
     @FXML
-    private TilePane tilePane;
+    private TableView<TypeOffre> tableView;
+
+    @FXML
+    private TableColumn<TypeOffre, String> nomColumn;
+    @FXML
+    private TableColumn<TypeOffre, String> descriptionColumn;
+    @FXML
+    private TableColumn<TypeOffre, String> dateCreationColumn;
+    @FXML
+    private TableColumn<TypeOffre, Void> updateColumn;
+    @FXML
+    private TableColumn<TypeOffre, Void> deleteColumn;
+
+
 
     @FXML
     private void initialize() {
+        // Initialize TableView columns
+        nomColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> cellData.getValue().getNom()));
+        descriptionColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> cellData.getValue().getDescription()));
+        dateCreationColumn.setCellValueFactory(cellData -> Bindings.createObjectBinding(() -> cellData.getValue().getDate_creation().toString()));
+
+        // Set cell factory for update and delete buttons
+        updateColumn.setCellFactory(param -> new TableCell<>() {
+            final Button cellButton = new Button("Modifier");
+
+            {
+                cellButton.setOnAction(event -> {
+                    TypeOffre type = getTableView().getItems().get(getIndex());
+                    handleUpdateType(type);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    setGraphic(cellButton);
+                    setText(null);
+                }
+            }
+        });
+
+        deleteColumn.setCellFactory(param -> new TableCell<>() {
+            final Button cellButton = new Button("Supprimer");
+
+            {
+                cellButton.setOnAction(event -> {
+                    TypeOffre type = getTableView().getItems().get(getIndex());
+                    handleDeleteType(type);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    setGraphic(cellButton);
+                    setText(null);
+                }
+            }
+        });
+
         // Fetching all types from the service
         refresh();
     }
 
     public void refresh() {
-        // Fetch types from the service
+        // Retrieve all types from the service
         ArrayList<TypeOffre> types = typeService.readAll();
 
-        // Clear current elements in TilePane
-        tilePane.getChildren().clear();
+        // Clear current items in TableView
+        tableView.getItems().clear();
 
-        // Display types in the view
-        for (TypeOffre type : types) {
-            AnchorPane typePane = new AnchorPane(); // Container for each type
-            VBox typeBox = new VBox(5); // Vertical box to hold type details
-            Label nomLabel = new Label("Nom: " + type.getNom());
-            Label descriptionLabel = new Label("Description: " + type.getDescription());
-            Label dateCreationLabel = new Label("Date création: " + type.getDate_creation().toString());
-            Button updateButton = new Button("Update");
-            updateButton.setOnAction(e -> {
-                handleUpdateType(type); // Appeler la méthode de gestion de mise à jour
-            });
-            Button deleteButton = new Button("Delete");
-            deleteButton.setOnAction(e -> {
-                handleDeleteType(type); // Appeler la méthode de gestion de suppression
-            });
+        // Add types to the TableView
+        tableView.getItems().addAll(types);
 
-            // Adding elements to the type box
-            typeBox.getChildren().addAll(nomLabel, descriptionLabel, dateCreationLabel, updateButton, deleteButton);
-            typePane.getChildren().add(typeBox); // Add type box to type pane
-
-            // Set position of the type box in the AnchorPane
-            AnchorPane.setTopAnchor(typeBox, 0.0);
-            AnchorPane.setLeftAnchor(typeBox, 0.0);
-            AnchorPane.setRightAnchor(typeBox, 0.0);
-
-            // Add the type pane to the TilePane
-            tilePane.getChildren().add(typePane);
-        }
     }
 
     @FXML
@@ -74,7 +110,7 @@ public class IndexTypeController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/type/add-type.fxml"));
             Parent root = loader.load();
             AddTypeController controller = loader.getController();
-            controller.setIndexTypeController(this); // Passe une référence à IndexTypeController
+            controller.setIndexTypeController(this); // Pass a reference to IndexTypeController
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
@@ -86,12 +122,13 @@ public class IndexTypeController {
 
     @FXML
     private void handleUpdateType(TypeOffre type) {
+        // Implement update type functionality here
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/type/update-type.fxml"));
             Parent root = loader.load();
             UpdateTypeController controller = loader.getController();
-            controller.setIndexTypeController(this); // Passe une référence à IndexTypeController
-            controller.setType(type); // Passe le type à mettre à jour au contrôleur de mise à jour
+            controller.setIndexTypeController(this); // Pass a reference to IndexOffreController
+            controller.setType(type); // Pass the offer to update to the update controller
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
@@ -99,22 +136,23 @@ public class IndexTypeController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     @FXML
     private void handleDeleteType(TypeOffre type) {
-        // Demander confirmation avant de supprimer
+        // Implement delete type functionality here
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
-        alert.setHeaderText("Suppression de type");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer ce type ?");
+        alert.setHeaderText("Suppression de le type");
+        alert.setContentText("Êtes-vous sûr de vouloir supprimer cette type ?");
 
-        // Afficher la boîte de dialogue de confirmation
+        // Display the confirmation dialog
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Supprimer le type de la base de données
+
                 typeService.delete(type.getId());
-                // Rafraîchir la liste des types dans l'interface IndexType
+
                 refresh();
             }
         });

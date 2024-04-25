@@ -12,8 +12,8 @@ public class MainApplication extends Application {
     public void start(Stage stage) throws IOException {
 
 
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("/offre/index-offre.fxml"));
-     //FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("/type/index-type.fxml"));
+        //FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("/offre/index-offre.fxml"));
+     FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("/type/index-type.fxml"));
 
 
 
@@ -22,6 +22,7 @@ public class MainApplication extends Application {
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();
+
     }
 
     public static void main(String[] args) {
